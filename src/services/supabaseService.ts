@@ -46,6 +46,14 @@ export const authService = {
     return supabase.auth.onAuthStateChange(callback);
   },
 
+  getUserProfile: async (userId: string) => {
+    return await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+  },
+
   ensureUserProfile: async (user: { id: string; email?: string | undefined }) => {
     if (!user.email) throw new Error('Email do usuário não encontrado');
 

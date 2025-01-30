@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Communities from './pages/Communities';
+import Players from './pages/Players';
+import CommunityDetails from './pages/CommunityDetails';
 import { authService } from './services/supabaseService';
 import { User } from '@supabase/supabase-js';
 
@@ -48,8 +50,20 @@ const App: React.FC = () => {
         element={user ? <Navigate to="/" /> : <Login />} 
       />
       <Route 
-        path="/" 
+        path="/players" 
+        element={user ? <Players /> : <Navigate to="/login" />} 
+      />
+      <Route 
+        path="/communities" 
         element={user ? <Communities /> : <Navigate to="/login" />} 
+      />
+      <Route 
+        path="/communities/:id" 
+        element={user ? <CommunityDetails /> : <Navigate to="/login" />} 
+      />
+      <Route 
+        path="/" 
+        element={<Navigate to="/communities" replace />} 
       />
     </Routes>
   );

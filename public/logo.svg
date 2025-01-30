@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <title>DoMatch</title>
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <circle fill="#3B82F6" cx="12" cy="12" r="12"/>
+        <path d="M7,8 L17,8 C18.1045695,8 19,8.8954305 19,10 L19,14 C19,15.1045695 18.1045695,16 17,16 L7,16 C5.8954305,16 5,15.1045695 5,14 L5,10 C5,8.8954305 5.8954305,8 7,8 Z M8,10 L8,14 L10,14 L10,10 L8,10 Z M14,10 L14,14 L16,14 L16,10 L14,10 Z" fill="#FFFFFF"/>
+    </g>
+</svg>

@@ -20,7 +20,7 @@ export interface Database {
           updated_at: string
         }
         Insert: {
-          id?: string
+          id: string
           name: string
           nickname?: string | null
           phone?: string | null
@@ -38,11 +38,46 @@ export interface Database {
           updated_at?: string
         }
       }
+      competitions: {
+        Row: {
+          id: string
+          community_id: string
+          name: string
+          description: string | null
+          status: 'pending' | 'active' | 'finished'
+          start_date: string | null
+          end_date: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          community_id: string
+          name: string
+          description?: string | null
+          status?: 'pending' | 'active' | 'finished'
+          start_date?: string | null
+          end_date?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          community_id?: string
+          name?: string
+          description?: string | null
+          status?: 'pending' | 'active' | 'finished'
+          start_date?: string | null
+          end_date?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
       communities: {
         Row: {
           id: string
           name: string
-          description: string
+          description: string | null
           whatsapp_group_id: string | null
           admin_id: string
           created_at: string
@@ -51,7 +86,7 @@ export interface Database {
         Insert: {
           id?: string
           name: string
-          description: string
+          description?: string | null
           whatsapp_group_id?: string | null
           admin_id: string
           created_at?: string
@@ -60,7 +95,7 @@ export interface Database {
         Update: {
           id?: string
           name?: string
-          description?: string
+          description?: string | null
           whatsapp_group_id?: string | null
           admin_id?: string
           created_at?: string
@@ -80,7 +115,7 @@ export interface Database {
           id?: string
           community_id: string
           user_id: string
-          role: string
+          role?: string
           created_at?: string
           updated_at?: string
         }
@@ -89,35 +124,6 @@ export interface Database {
           community_id?: string
           user_id?: string
           role?: string
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      competitions: {
-        Row: {
-          id: string
-          name: string
-          description: string
-          organizer_id: string
-          status: 'pending' | 'in_progress' | 'finished'
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          description: string
-          organizer_id: string
-          status?: 'pending' | 'in_progress' | 'finished'
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          description?: string
-          organizer_id?: string
-          status?: 'pending' | 'in_progress' | 'finished'
           created_at?: string
           updated_at?: string
         }
