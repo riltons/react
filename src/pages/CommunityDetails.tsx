@@ -4,7 +4,7 @@ import { communityService } from '../services/communityService';
 import { communityMemberService } from '../services/communityMemberService';
 import { competitionService } from '../services/competitionService';
 import type { Database } from '../types/supabase';
-import Header from '../components/Header';
+import AuthenticatedLayout from '../components/AuthenticatedLayout';
 
 type Tables = Database['public']['Tables'];
 type Community = Tables['communities']['Row'];
@@ -186,8 +186,7 @@ const CommunityDetails: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100">
-        <Header />
+      <AuthenticatedLayout>
         <div className="py-6 flex flex-col justify-center sm:py-12">
           <div className="relative py-3 sm:max-w-xl sm:mx-auto">
             <div className="text-center">
@@ -195,14 +194,13 @@ const CommunityDetails: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </AuthenticatedLayout>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-100">
-        <Header />
+      <AuthenticatedLayout>
         <div className="py-6 flex flex-col justify-center sm:py-12">
           <div className="relative py-3 sm:max-w-xl sm:mx-auto">
             <div className="text-center text-red-600">
@@ -210,29 +208,26 @@ const CommunityDetails: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </AuthenticatedLayout>
     );
   }
 
   if (!community) {
     return (
-      <div className="min-h-screen bg-gray-100">
-        <Header />
+      <AuthenticatedLayout>
         <div className="py-6 flex flex-col justify-center sm:py-12">
           <div className="relative py-3 sm:max-w-xl sm:mx-auto">
-            <div className="text-center">
+            <div className="text-center text-red-600">
               Comunidade não encontrada
             </div>
           </div>
         </div>
-      </div>
+      </AuthenticatedLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      
+    <AuthenticatedLayout>
       {/* Hero Section */}
       <div className="bg-indigo-600 pb-32">
         <div className="py-5">
@@ -538,7 +533,7 @@ const CommunityDetails: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+    </AuthenticatedLayout>
   );
 };
 

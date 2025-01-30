@@ -4,6 +4,13 @@ import type { Database } from '../types/supabase';
 type Tables = Database['public']['Tables'];
 type User = Tables['users']['Row'];
 
+// Tipo para criar usuário
+type CreateUserData = {
+  name: string;
+  nickname?: string;
+  phone?: string;
+};
+
 export const userService = {
   list: async () => {
     return await supabase
@@ -17,6 +24,14 @@ export const userService = {
       .from('users')
       .select('*')
       .eq('id', id)
+      .single();
+  },
+
+  create: async (data: CreateUserData) => {
+    return await supabase
+      .from('users')
+      .insert(data)
+      .select()
       .single();
   },
 

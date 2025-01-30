@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { communityService } from '../services/communityService';
 import type { Database } from '../types/supabase';
-import Header from '../components/Header';
+import AuthenticatedLayout from '../components/AuthenticatedLayout';
 
 type Tables = Database['public']['Tables'];
 type Community = Tables['communities']['Row'];
@@ -58,8 +58,7 @@ const Communities: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
+      <AuthenticatedLayout>
         <div className="py-6 flex flex-col justify-center sm:py-12">
           <div className="relative py-3 sm:max-w-xl sm:mx-auto">
             <div className="text-center">
@@ -67,14 +66,12 @@ const Communities: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </AuthenticatedLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      
+    <AuthenticatedLayout>
       {/* Hero Section */}
       <div className="bg-indigo-600 pb-32">
         <div className="py-5">
@@ -220,7 +217,7 @@ const Communities: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+    </AuthenticatedLayout>
   );
 };
 

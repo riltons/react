@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { userService } from '../services/userService';
 import type { Database } from '../types/supabase';
-import Header from '../components/Header';
+import AuthenticatedLayout from '../components/AuthenticatedLayout';
 
 type Tables = Database['public']['Tables'];
 type User = Tables['users']['Row'];
@@ -11,6 +11,12 @@ const Players: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newPlayer, setNewPlayer] = useState({
+    name: '',
+    nickname: '',
+    phone: ''
+  });
 
   useEffect(() => {
     loadPlayers();
@@ -30,6 +36,24 @@ const Players: React.FC = () => {
     }
   };
 
+  const handleCreatePlayer = async () => {
+    try {
+      setError('');
+      const { error } = await userService.create({
+        name: newPlayer.name,
+        nickname: newPlayer.nickname || undefined,
+        phone: newPlayer.phone || undefined
+      });
+      if (error) throw error;
+      await loadPlayers();
+      setShowCreateForm(false);
+      setNewPlayer({ name: '', nickname: '', phone: '' });
+    } catch (err) {
+      console.error('Erro ao criar jogador:', err);
+      setError('Erro ao criar jogador');
+    }
+  };
+
   const filteredPlayers = players.filter(player =>
     player.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     player.nickname?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -37,8 +61,7 @@ const Players: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
+      <AuthenticatedLayout>
         <div className="py-6 flex flex-col justify-center sm:py-12">
           <div className="relative py-3 sm:max-w-xl sm:mx-auto">
             <div className="text-center">
@@ -46,14 +69,12 @@ const Players: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </AuthenticatedLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      
+    <AuthenticatedLayout>
       {/* Hero Section */}
       <div className="bg-indigo-600 pb-32">
         <div className="py-5">
@@ -62,6 +83,12 @@ const Players: React.FC = () => {
               <h1 className="text-2xl font-bold text-white">
                 Jogadores
               </h1>
+              <button
+                onClick={() => setShowCreateForm(true)}
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-indigo-600 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-indigo-600 focus:ring-white"
+              >
+                Novo Jogador
+              </button>
             </div>
           </div>
         </div>
@@ -135,7 +162,71 @@ const Players: React.FC = () => {
           </div>
         </div>
       </main>
-    </div>
+
+      {/* Modal Novo Jogador */}
+      {showCreateForm && (
+        <div className="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+              <div>
+                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                  Novo Jogador
+                </h3>
+                <div className="mt-2 space-y-4">
+                  <input
+                    type="text"
+                    placeholder="Nome do jogador"
+                    className="block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-gray-300 rounded-md"
+                    value={newPlayer.name}
+                    onChange={(e) => setNewPlayer({ ...newPlayer, name: e.target.value })}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Apelido (opcional)"
+                    className="block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-gray-300 rounded-md"
+                    value={newPlayer.nickname}
+                    onChange={(e) => setNewPlayer({ ...newPlayer, nickname: e.target.value })}
+                  />
+                  <input
+                    type="tel"
+                    placeholder="Telefone (opcional)"
+                    className="block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-gray-300 rounded-md"
+                    value={newPlayer.phone}
+                    onChange={(e) => setNewPlayer({ ...newPlayer, phone: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+                <button
+                  type="button"
+                  className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium sm:col-start-2 sm:text-sm ${
+                    newPlayer.name
+                      ? 'bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                  onClick={handleCreatePlayer}
+                  disabled={!newPlayer.name}
+                >
+                  Criar
+                </button>
+                <button
+                  type="button"
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
+                  onClick={() => {
+                    setShowCreateForm(false);
+                    setNewPlayer({ name: '', nickname: '', phone: '' });
+                  }}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </AuthenticatedLayout>
   );
 };
 
