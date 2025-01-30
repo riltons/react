@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/supabaseService';
 import Header from './Header';
 import BottomNavigation from './BottomNavigation';
+import { Toaster } from "../components/ui/toaster";
 
 interface AuthenticatedLayoutProps {
   children: React.ReactNode;
@@ -25,7 +26,10 @@ const AuthenticatedLayout: React.FC<AuthenticatedLayoutProps> = ({ children }) =
   return (
     <div className="min-h-screen bg-gray-50 pb-16 sm:pb-0">
       <Header />
-      {children}
+      <main className="flex-1 overflow-y-auto p-4">
+        {children}
+      </main>
+      <Toaster />
       <BottomNavigation />
     </div>
   );

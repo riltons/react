@@ -30,7 +30,15 @@ export const userService = {
   create: async (data: CreateUserData) => {
     return await supabase
       .from('users')
-      .insert(data)
+      .insert([data])
+      .select()
+      .single();
+  },
+
+  createUser: async (data: CreateUserData) => {
+    return await supabase
+      .from('users')
+      .insert([data])
       .select()
       .single();
   },

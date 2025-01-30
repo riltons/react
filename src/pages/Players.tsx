@@ -2,20 +2,69 @@ import { useEffect, useState } from 'react';
 import { userService } from '../services/userService';
 import type { Database } from '../types/supabase';
 import AuthenticatedLayout from '../components/AuthenticatedLayout';
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { useToast } from "../components/ui/use-toast";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../components/ui/form";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "../components/ui/card";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "../components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../components/ui/dialog";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 
 type Tables = Database['public']['Tables'];
 type User = Tables['users']['Row'];
+
+const playerSchema = z.object({
+  name: z.string().min(2, {
+    message: "Nome deve ter pelo menos 2 caracteres.",
+  }),
+  nickname: z.string().optional(),
+  phone: z.string().optional(),
+});
 
 const Players: React.FC = () => {
   const [players, setPlayers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [newPlayer, setNewPlayer] = useState({
-    name: '',
-    nickname: '',
-    phone: ''
+  const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
+  const form = useForm<z.infer<typeof playerSchema>>({
+    resolver: zodResolver(playerSchema),
+    defaultValues: {
+      name: "",
+      nickname: "",
+      phone: "",
+    },
   });
 
   useEffect(() => {
@@ -36,21 +85,24 @@ const Players: React.FC = () => {
     }
   };
 
-  const handleCreatePlayer = async () => {
+  const onSubmit = async (values: z.infer<typeof playerSchema>) => {
     try {
-      setError('');
-      const { error } = await userService.create({
-        name: newPlayer.name,
-        nickname: newPlayer.nickname || undefined,
-        phone: newPlayer.phone || undefined
-      });
+      const { data, error } = await userService.createUser(values);
       if (error) throw error;
-      await loadPlayers();
-      setShowCreateForm(false);
-      setNewPlayer({ name: '', nickname: '', phone: '' });
-    } catch (err) {
-      console.error('Erro ao criar jogador:', err);
-      setError('Erro ao criar jogador');
+      
+      setPlayers([...players, data]);
+      toast({
+        title: "Jogador criado",
+        description: "O jogador foi adicionado com sucesso!",
+      });
+      setIsOpen(false);
+      form.reset();
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Não foi possível criar o jogador.",
+      });
     }
   };
 
@@ -83,12 +135,65 @@ const Players: React.FC = () => {
               <h1 className="text-2xl font-bold text-white">
                 Jogadores
               </h1>
-              <button
-                onClick={() => setShowCreateForm(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-indigo-600 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-indigo-600 focus:ring-white"
-              >
-                Novo Jogador
-              </button>
+              <Dialog open={isOpen} onOpenChange={setIsOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="secondary">Novo Jogador</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Novo Jogador</DialogTitle>
+                    <DialogDescription>
+                      Preencha os dados do novo jogador abaixo.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nome</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Nome do jogador" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="nickname"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Apelido</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Apelido (opcional)" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="phone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Telefone</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Telefone (opcional)" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <DialogFooter>
+                        <Button type="submit">Salvar</Button>
+                      </DialogFooter>
+                    </form>
+                  </Form>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </div>
@@ -106,9 +211,9 @@ const Players: React.FC = () => {
                     <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
                   </svg>
                 </div>
-                <input
+                <Input
                   type="text"
-                  className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
+                  className="pl-10"
                   placeholder="Buscar jogador..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -136,96 +241,34 @@ const Players: React.FC = () => {
             {/* Lista de Jogadores */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {filteredPlayers.map((player) => (
-                <div
-                  key={player.id}
-                  className="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm hover:border-gray-400"
-                >
-                  <div className="flex flex-col h-full">
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      {player.name}
-                    </h3>
-                    {player.nickname && (
-                      <p className="text-sm text-gray-500 flex-grow mb-4">
-                        {player.nickname}
-                      </p>
-                    )}
-                    <div className="flex items-center text-xs text-gray-500">
+                <Card key={player.id} className="hover:border-primary/50">
+                  <CardHeader>
+                    <div className="flex items-center space-x-4">
+                      <Avatar>
+                        <AvatarFallback>{player.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <CardTitle>{player.name}</CardTitle>
+                        {player.nickname && (
+                          <CardDescription>{player.nickname}</CardDescription>
+                        )}
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardFooter>
+                    <div className="flex items-center text-xs text-muted-foreground">
                       <svg className="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                       </svg>
                       <span>Entrou em {new Date(player.created_at).toLocaleDateString()}</span>
                     </div>
-                  </div>
-                </div>
+                  </CardFooter>
+                </Card>
               ))}
             </div>
           </div>
         </div>
       </main>
-
-      {/* Modal Novo Jogador */}
-      {showCreateForm && (
-        <div className="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
-              <div>
-                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                  Novo Jogador
-                </h3>
-                <div className="mt-2 space-y-4">
-                  <input
-                    type="text"
-                    placeholder="Nome do jogador"
-                    className="block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-gray-300 rounded-md"
-                    value={newPlayer.name}
-                    onChange={(e) => setNewPlayer({ ...newPlayer, name: e.target.value })}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Apelido (opcional)"
-                    className="block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-gray-300 rounded-md"
-                    value={newPlayer.nickname}
-                    onChange={(e) => setNewPlayer({ ...newPlayer, nickname: e.target.value })}
-                  />
-                  <input
-                    type="tel"
-                    placeholder="Telefone (opcional)"
-                    className="block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-gray-300 rounded-md"
-                    value={newPlayer.phone}
-                    onChange={(e) => setNewPlayer({ ...newPlayer, phone: e.target.value })}
-                  />
-                </div>
-              </div>
-              <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
-                <button
-                  type="button"
-                  className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium sm:col-start-2 sm:text-sm ${
-                    newPlayer.name
-                      ? 'bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
-                  onClick={handleCreatePlayer}
-                  disabled={!newPlayer.name}
-                >
-                  Criar
-                </button>
-                <button
-                  type="button"
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
-                  onClick={() => {
-                    setShowCreateForm(false);
-                    setNewPlayer({ name: '', nickname: '', phone: '' });
-                  }}
-                >
-                  Cancelar
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </AuthenticatedLayout>
   );
 };
